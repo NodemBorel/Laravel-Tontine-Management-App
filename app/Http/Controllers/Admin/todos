@@ -1,0 +1,59 @@
+$sessionId = Session::latest()->first();
+$payments = Payments::where('session_id', $sessionId->id)->select('amount')->get();
+
+$totalAmount = $payments->sum('amount');
+$shareAmount = $totalAmount / 3;
+
+$users = User::take(3)->get();
+
+foreach ($users as $user) {
+    $user->update(['balance' => $user->balance + $shareAmount]);
+
+    $share = new Share();
+    $share->user_id = $user->id;
+    $share->amount = $shareAmount;
+    $share->count = $share->count + 1;
+    $share->save();
+}
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+$users = User::all();
+
+$labels = $users->pluck('name');
+$data = $users->pluck('balance');
+
+<canvas id="myChart"></canvas>
+
+<script>
+var ctx = document.getElementById('myChart').getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: <?php echo json_encode($labels); ?>,
+        datasets: [{
+            label: 'User Balances',
+            data: <?php echo json_encode($data); ?>,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+});
+</script>
+
+
+
+
